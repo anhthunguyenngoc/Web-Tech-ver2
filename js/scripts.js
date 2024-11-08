@@ -414,8 +414,6 @@ function showContent(sectionId) {
       </div>`
   }
   
-  
-
   // Hide all sections
   const sections = document.querySelectorAll('.w3-container');
   sections.forEach(section => section.classList.add('hidden'));
@@ -504,30 +502,9 @@ function loadMenuTable(arr, func, id){
   let html = ``;
   for(item of arr) {
         
-    let conditionText = ""
-    let cssText = ""
-
-    for (let i = 0; i < style.sheet.cssRules.length; i++) {
-      let cssSheet = style.sheet.cssRules[i].cssText
-      if(cssSheet.includes(item.id)){
-        let ruleList = style.sheet.cssRules[i].cssRules
-        for (let i = 0; i < ruleList.length; i++) {
-          let rule = ruleList[i];
-          if (rule.selectorText === `#${item.id}`){
-            cssText = rule.cssText
-          }
-        try{
-          conditionText = extractMediaCondition(cssSheet)
-          cssText = extractCssContent(cssText)
-          break
-        }catch{}
-          
-        }
-      }
-    }
-
     let layoutText = ""
     if(item.id.includes("-content")){
+      console.log(document.getElementById(item.id))
       let layoutDiv = document.getElementById(item.id).cloneNode(false)
       layoutText = layoutDiv.style.cssText
     }
@@ -695,46 +672,46 @@ function resetStudentInfo(){
           "title": "Nội dung các dự án đã tham gia",
           html: `
                     
-                      <table class="table-info">
-                        <tr>
-                          <th>Nền tảng Học Trực Tuyến "EduA"</th>
-                          <td>
-                            Mô tả: EduA là một nền tảng học trực tuyến dành cho sinh
-                            viên, cho phép người dùng tham gia các khóa học từ xa. Dự án
-                            bao gồm việc phát triển giao diện người dùng thân thiện,
-                            tích hợp tính năng video trực tuyến và quản lý khóa học.
-                            <br />Công nghệ sử dụng: HTML, CSS, JavaScript, React cho
-                            frontend; Node.js và MongoDB cho backend. <br />Vai trò:
-                            Thiết kế giao diện người dùng và phát triển các tính năng
-                            chính của nền tảng.
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Website Thương Mại Điện Tử "ShopB"</th>
-                          <td>
-                            Mô tả: ShopB là một trang web thương mại điện tử cho phép
-                            người dùng mua sắm trực tuyến. Dự án bao gồm việc phát triển
-                            các trang sản phẩm, giỏ hàng và thanh toán trực tuyến.
-                            <br />Công nghệ sử dụng: Bootstrap cho thiết kế responsive,
-                            PHP và MySQL cho backend, cùng với API thanh toán. <br />Vai
-                            trò: Xây dựng hệ thống quản lý sản phẩm và giỏ hàng, cũng
-                            như tích hợp tính năng thanh toán.
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Blog Cá Nhân "TechC"</th>
-                          <td>
-                            Mô tả: TechC là một blog cá nhân nơi người viết chia sẻ các
-                            bài viết về công nghệ, thủ thuật lập trình và đánh giá sản
-                            phẩm. Dự án bao gồm việc phát triển chức năng viết và quản
-                            lý bài viết, cũng như hệ thống bình luận. <br />Công nghệ sử
-                            dụng: WordPress cho hệ thống quản lý nội dung, CSS cho thiết
-                            kế và jQuery cho các tính năng tương tác. <br />Vai trò:
-                            Thiết kế giao diện blog, phát triển các chức năng bình luận
-                            và tối ưu hóa SEO cho các bài viết.
-                          </td>
-                        </tr>
-                      </table>
+                  <table class="table-info">
+                    <tr>
+                      <th>Nền tảng Học Trực Tuyến "EduA"</th>
+                      <td>
+                        Mô tả: EduA là một nền tảng học trực tuyến dành cho sinh
+                        viên, cho phép người dùng tham gia các khóa học từ xa. Dự án
+                        bao gồm việc phát triển giao diện người dùng thân thiện,
+                        tích hợp tính năng video trực tuyến và quản lý khóa học.
+                        <br />Công nghệ sử dụng: HTML, CSS, JavaScript, React cho
+                        frontend; Node.js và MongoDB cho backend. <br />Vai trò:
+                        Thiết kế giao diện người dùng và phát triển các tính năng
+                        chính của nền tảng.
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Website Thương Mại Điện Tử "ShopB"</th>
+                      <td>
+                        Mô tả: ShopB là một trang web thương mại điện tử cho phép
+                        người dùng mua sắm trực tuyến. Dự án bao gồm việc phát triển
+                        các trang sản phẩm, giỏ hàng và thanh toán trực tuyến.
+                        <br />Công nghệ sử dụng: Bootstrap cho thiết kế responsive,
+                        PHP và MySQL cho backend, cùng với API thanh toán. <br />Vai
+                        trò: Xây dựng hệ thống quản lý sản phẩm và giỏ hàng, cũng
+                        như tích hợp tính năng thanh toán.
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Blog Cá Nhân "TechC"</th>
+                      <td>
+                        Mô tả: TechC là một blog cá nhân nơi người viết chia sẻ các
+                        bài viết về công nghệ, thủ thuật lập trình và đánh giá sản
+                        phẩm. Dự án bao gồm việc phát triển chức năng viết và quản
+                        lý bài viết, cũng như hệ thống bình luận. <br />Công nghệ sử
+                        dụng: WordPress cho hệ thống quản lý nội dung, CSS cho thiết
+                        kế và jQuery cho các tính năng tương tác. <br />Vai trò:
+                        Thiết kế giao diện blog, phát triển các chức năng bình luận
+                        và tối ưu hóa SEO cho các bài viết.
+                      </td>
+                    </tr>
+                  </table>
                      
                   `
         }
@@ -749,15 +726,15 @@ function resetStudentInfo(){
           "title": "Nội dung sinh hoạt công dân",
           html: `
                     
-                      <p>
-                        SHCD-A là sự kiện thường niên được tổ chức bởi các tổ chức sinh viên
-                        và cộng đồng nhằm nâng cao nhận thức và trách nhiệm của công dân
-                        trong xã hội hiện đại. Năm nay, sự kiện sẽ tập trung vào những vấn
-                        đề cấp bách mà giới trẻ phải đối mặt, cùng với các giải pháp thiết
-                        thực để nâng cao sự tham gia của cộng đồng.
-                      </p>
-                    
-                  `
+                  <p>
+                    SHCD-A là sự kiện thường niên được tổ chức bởi các tổ chức sinh viên
+                    và cộng đồng nhằm nâng cao nhận thức và trách nhiệm của công dân
+                    trong xã hội hiện đại. Năm nay, sự kiện sẽ tập trung vào những vấn
+                    đề cấp bách mà giới trẻ phải đối mặt, cùng với các giải pháp thiết
+                    thực để nâng cao sự tham gia của cộng đồng.
+                  </p>
+                
+              `
         }
       ]
     }
@@ -765,6 +742,7 @@ function resetStudentInfo(){
 
   menu[3].details = newStudentInfo
   menu[3].html = converToSectionHTML("menu4")
+  document.getElementById("menu4").innerHTML = menu[3].html
   loadAdminMenuLeft("menu4")
 }
 
