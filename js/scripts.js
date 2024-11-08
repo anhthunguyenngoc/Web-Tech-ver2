@@ -317,6 +317,66 @@ buttons.forEach(button => {
   });
 });
 
+
+// Tạo một thẻ <style> và thêm vào <head>
+let style = document.createElement('style');
+document.head.appendChild(style);
+
+// Thêm một quy tắc media query
+style.sheet.insertRule(`
+    @media (max-width: 992px) {
+      #courseInfo-detail2-content2 {
+        grid-column: 1 / -1 !important;
+        margin: 0 !important;
+      }
+
+      #courseInfo-detail2-content3 {
+          grid-column: 1 / -1 !important;
+          margin: 0 !important;
+      }
+
+      #courseInfo-detail3-content2 {
+          grid-column: 1 / -1 !important;
+          margin: 0 !important;
+      }
+
+      #courseInfo-detail3-content3 {
+          grid-column: 1 / -1 !important;
+          margin: 0 !important;
+      }
+
+      #info-detail5-content1 {
+          grid-column: 1 / -1 !important;
+          margin: 0 !important;
+      }
+
+      #info-detail5-content2 {
+          grid-column: 1 / -1 !important;
+          margin: 0 !important;
+      }
+
+      #webTech-detail9-content1 {
+          grid-column: 1 / -1 !important;
+          margin: 0 !important;
+      }
+
+      #webTech-detail9-content2 {
+          grid-column: 1 / -1 !important;
+          margin: 0 !important;
+      }
+
+      #studentInfo-detail1-content1 {
+          grid-column: 1 / -1 !important;
+          margin: 0 !important;
+      }
+
+      #studentInfo-detail1-content2 {
+          grid-column: 1 / -1 !important;
+          margin: 0 !important;
+      }
+    }
+`, style.sheet.cssRules.length);
+
 // Toggle between showing and hiding the sidebar, and add overlay effect
 function w3_open() {
   if (mySidebar.style.display === 'block') {
@@ -393,6 +453,29 @@ window.onload = function () {
   showContent('menu1');
 };
 
+function extractCssContent(cssRule) {
+  // Sử dụng biểu thức chính quy để tìm nội dung trong ngoặc {}
+  const regex = /{([^}]*)}/; // Tìm và nhóm nội dung trong ngoặc nhọn
+  const match = cssRule.match(regex); // Tìm match với regex
+  if (match && match[1]) {
+      return match[1].trim(); // Trả về nội dung trong ngoặc, loại bỏ khoảng trắng
+  } else {
+      return null; // Không tìm thấy nội dung
+  }
+}
+
+function extractMediaCondition(mediaQuery) {
+  // Sử dụng biểu thức chính quy để tìm điều kiện trong @media
+  const regex = /@media\s*(.*?)\s*{/; // Tìm và nhóm điều kiện giữa @media và {
+  const match = mediaQuery.match(regex); // Tìm match với regex
+
+  if (match && match[1]) {
+      return match[1].trim(); // Trả về điều kiện, loại bỏ khoảng trắng
+  } else {
+      return null; // Không tìm thấy điều kiện
+  }
+}
+
 function loadMenuTable(arr, func, id){
   if(arr.length === 0) {
     let itemId = id
@@ -420,13 +503,35 @@ function loadMenuTable(arr, func, id){
 
   let html = ``;
   for(item of arr) {
+        
+    let conditionText = ""
+    let cssText = ""
+
+    for (let i = 0; i < style.sheet.cssRules.length; i++) {
+      let cssSheet = style.sheet.cssRules[i].cssText
+      if(cssSheet.includes(item.id)){
+        let ruleList = style.sheet.cssRules[i].cssRules
+        for (let i = 0; i < ruleList.length; i++) {
+          let rule = ruleList[i];
+          if (rule.selectorText === `#${item.id}`){
+            cssText = rule.cssText
+          }
+        try{
+          conditionText = extractMediaCondition(cssSheet)
+          cssText = extractCssContent(cssText)
+          break
+        }catch{}
+          
+        }
+      }
+    }
+
     let layoutText = ""
     if(item.id.includes("-content")){
       let layoutDiv = document.getElementById(item.id).cloneNode(false)
-      layoutDiv.removeAttribute('id');
-      layoutText = layoutDiv.outerHTML
+      layoutText = layoutDiv.style.cssText
     }
-    
+
     html += `<tr>
               <th class="width-80" id="${item.id}-menu-name">
                 <span class="name">${item.title}</span>
@@ -449,6 +554,21 @@ function loadMenuTable(arr, func, id){
                     </div>
                   </div>
                   <textarea rows="4" class="layout-input full-width">${layoutText}</textarea>
+                </div>
+                <div class="media-input-div hidden">
+                  <div class="flex space-between">
+                    Media queries:
+                    <div class="flex">
+                      <i class="fa-xl fa-solid fa-xmark" onclick="cancelEditMedia('${item.id}')"></i>
+                      <i class="fa-xl fa-solid fa-check" onclick="saveEditMedia('${item.id}')"></i>
+                      <i class="fa-xl fa-solid fa-plus" onclick="addEditMedia('${item.id}')"></i>
+                    </div>
+                  </div>
+                  <table id="${item.id}-media-list">
+                    <tbody>
+                      `+ loadMediaList(item.id) +`
+                    </tbody>
+                  </table>
                 </div>
               </th>
               <td class="flex flex-wrap space-between">
@@ -677,7 +797,6 @@ function converToSectionHTML(sectionId){
         subSectionContent.id = subItem.id
         subSectionContent.innerHTML = subItem.html
         subSectionContent.style.gridColumn = "1 / -1";
-        console.log(subSectionContent.outerHTML)
         subSectionContainer.innerHTML += subSectionContent.outerHTML
       }
 
@@ -719,7 +838,7 @@ function loadAdminContentsLayout(id) {
   let title2 = arr.find(item => item.id === id);
   let details = (arr.find(item => item.id === id)).details
 
-  document.getElementById("admin-page-title").innerHTML = `Admin contents layout: "${title1.title}/${title2.title}"`
+  document.getElementById("admin-page-title").innerHTML = `Admin contents layout: "${title1.title}/${title2.title}" <a target="_blank" href="html/layout-help.html"><i class="fa-solid fa-circle-info"></i></a>`
   document.getElementById("admin-menu").innerHTML = loadMenuTable(details, "loadAdminContents", id)
 
   document.getElementById("preview").innerHTML = `
@@ -811,6 +930,7 @@ function editMenu(id){
   menuName.querySelector(".name-input-div").classList.remove("hidden")
   if(id.includes("-content")) {
     menuName.querySelector(".layout-input-div").classList.remove("hidden")  
+    menuName.querySelector(".media-input-div").classList.remove("hidden")  
   }               
 }
 
@@ -822,6 +942,11 @@ function cancelEditName(id){
 function cancelEditLayout(id){
   menuName = document.getElementById(`${id}-menu-name`)
   menuName.querySelector(".layout-input-div").classList.add("hidden")  
+}
+
+function cancelEditMedia(id){
+  menuName = document.getElementById(`${id}-menu-name`)
+  menuName.querySelector(".media-input-div").classList.add("hidden")  
 }
 
 function getContentBeforeDash(input) {
@@ -849,6 +974,7 @@ function saveEditName(id){
       title: value,
       html: html
     })
+    reloadContentLayout(id)
   } else {
     let sectionId = findSectionId(id)
     let arr = getArr(sectionId)
@@ -875,22 +1001,74 @@ function saveEditLayout(id){
   let value = menuName.querySelector(".layout-input").value
   cancelEditLayout(id)
 
-  if(!value || value.trim() === "") return;
+  // Tách thành các cặp thuộc tính và giá trị
+  let styles = value.split(';').map(style => style.trim()).filter(Boolean);
 
-  menuName.querySelector(".name").innerHTML = `${value}`
+  // Tạo một đối tượng để lưu trữ các thuộc tính style
+  let styleObject = {};
+  styles.forEach(style => {
+      let [key, value] = style.split(':').map(s => s.trim());
+      styleObject[key] = value;
+  });
+  let tempDiv = document.getElementById(id)
 
-  let styleRegex = /style="([^"]+)"/;
-
-  // Tìm kiếm trong chuỗi
-  let match = value.match(styleRegex);
-
-  if (match) {
-      // Lấy giá trị style từ kết quả
-      value = match[1].trim();
+  for (let [key, value] of Object.entries(styleObject)) {
+    tempDiv.style[key] = value; // Gán giá trị vào thuộc tính style
   }
 
-  document.getElementById(id).style.cssText = value
+  reloadContentLayout(id)
+}
 
+// Hàm cập nhật CSS từ chuỗi đầu vào
+function updateCssFromInput(id, mediaCondition, css) {
+  const mediaRuleString = `@media ${mediaCondition} {`;
+
+  let mediaRuleExists = false; // Biến để kiểm tra xem quy tắc media có tồn tại không
+
+  // Duyệt qua các quy tắc trong thẻ <style>
+  for (let i = 0; i < style.sheet.cssRules.length; i++) {
+      const existingRule = style.sheet.cssRules[i];
+      if (existingRule.cssRules) {
+          // Kiểm tra nếu quy tắc media trong thẻ <style> có cùng điều kiện
+          if (existingRule.cssText.startsWith(mediaRuleString)) {
+              // Duyệt qua các quy tắc bên trong media query
+              for (let j = 0; j < existingRule.cssRules.length; j++) {
+                  const ruleToUpdate = existingRule.cssRules[j];
+                  if (ruleToUpdate.selectorText === id) {
+                      // Cập nhật các thuộc tính của quy tắc
+                      mediaRuleExists = true; // Đánh dấu rằng quy tắc media đã tồn tại
+                      ruleToUpdate.style.cssText = css;
+                      return; // Dừng lại sau khi tìm thấy và cập nhật
+                  }
+              }
+          }
+      }
+  }
+
+  console.log(id, mediaCondition, css)
+
+  // Nếu không tìm thấy quy tắc media, thêm mới
+  if (!mediaRuleExists) {
+      style.sheet.insertRule(`
+        @media ${mediaCondition} {
+          ${id} {
+            ${css}
+          }
+        }
+    `, style.sheet.cssRules.length);
+      console.log(style.sheet)
+  }
+}
+
+
+function saveEditMedia(id){
+  let table = document.getElementById(`${id}-media-list`)
+  let mediaQueries = table.querySelectorAll(".media-query")
+  mediaQueries.forEach(mediaQuery => {
+    let mediaCondition = mediaQuery.querySelector(".media-condition-input").value
+    let css = mediaQuery.querySelector(".media-css-input").value
+    updateCssFromInput(`#${id}`, mediaCondition, css)
+  })
   reloadContentLayout(id)
 }
 
@@ -1006,7 +1184,6 @@ function saveAdd(index, id){
     let html = ``
     let layout = document.createElement("div")
     for(item of details) {
-      console.log(details)
       try {
         let layoutDiv = document.getElementById(item.id).cloneNode(false);
   
@@ -1060,19 +1237,39 @@ function saveAdd(index, id){
     func = "loadAdminMenuLeft"
   }
 
-  let layoutText = ""
-    if(item.id.includes("-content")){
-      try {
-        let layoutDiv = document.getElementById(item.id).cloneNode(false)
-        layoutDiv.removeAttribute('id');
-        layoutDiv.removeAttribute('class');
-        console.log(layoutDiv)
-        layoutText = layoutDiv.outerHTML
-      } catch (error) {
-        layoutText = '<div style="grid-column: 1 / -1;"></div>'
+  
+  let conditionText = ""
+  let cssText = ""
+
+  for (let i = 0; i < style.sheet.cssRules.length; i++) {
+    let cssSheet = style.sheet.cssRules[i].cssText
+    if(cssSheet.includes(item.id)){
+      let ruleList = style.sheet.cssRules[i].cssRules
+      for (let i = 0; i < ruleList.length; i++) {
+        let rule = ruleList[i];
+        if(rule.selectorText === `#${item.id}`){
+          cssText = rule.cssText
+        }
+        try{
+          conditionText = extractMediaCondition(cssSheet)
+          cssText = extractCssContent(cssText)
+          break
+        }catch{}
+        
       }
-      
     }
+  }
+
+  let layoutText = ""
+  if(item.id.includes("-content")){
+    try {
+      let layoutDiv = document.getElementById(item.id).cloneNode(false)
+      layoutText = layoutDiv.style.cssText
+    } catch (error) {
+      layoutText = 'grid-column: 1 / -1'
+    }
+    
+  }
 
   table.rows[index].innerHTML = `
     <tr>
@@ -1098,6 +1295,21 @@ function saveAdd(index, id){
           </div>
           <textarea rows="4" class="layout-input full-width">${layoutText}</textarea>
         </div>
+        <div class="media-input-div hidden">
+          <div class="flex space-between">
+            Media queries:
+            <div class="flex">
+              <i class="fa-xl fa-solid fa-xmark" onclick="cancelEditMedia('${item.id}')"></i>
+              <i class="fa-xl fa-solid fa-check" onclick="saveEditMedia('${item.id}')"></i>
+              <i class="fa-xl fa-solid fa-plus" onclick="addEditMedia('${item.id}')"></i>
+            </div>
+          </div>
+          <table id="${item.id}-media-list">
+            <tbody>
+              `+ loadMediaList(item.id) +`
+            </tbody>
+          </table>
+        </div>
       </th>
       <td class="flex space-between">
         <img onclick="${func}('${item.id}')" src="assets/eye-open.svg" />
@@ -1109,6 +1321,22 @@ function saveAdd(index, id){
   `  
 }
 
+function addEditMedia(id) {
+  const table = document.getElementById(`${id}-media-list`)
+  const rows = table.getElementsByTagName("tr")  
+  let rowIndex = rows.length - 1;
+  let newRowHTML =
+  `
+  <tr>
+    <td class="media-query">
+      <div style="display:inline;">@media <input class="media-condition-input" style="width:calc(100% - 100px)"></input> { </div>
+      <textarea rows="4" class="media-css-input full-width"></textarea>
+      }
+    </td>
+  </tr>`
+  const referenceRow = table.rows[rowIndex]; // Lấy hàng tham chiếu
+  referenceRow.insertAdjacentHTML('afterend', newRowHTML);
+}
 
 function cancelAdd(index){
   const table = document.getElementById("admin-menu")
@@ -1192,4 +1420,58 @@ function reloadContentLayout(id) {
 
   loadAdminContentsLayout(sectionId)
 
+}
+
+// Hàm nhận vào id và trả về một Map chứa các media query và cssText
+function getMediaQueriesContainingId(id) {
+  const mediaQueriesMap = new Map(); // Tạo một Map để lưu trữ media query và cssText
+
+  // Duyệt qua các quy tắc trong thẻ <style>
+  for (let i = 0; i < style.sheet.cssRules.length; i++) {
+      const rule = style.sheet.cssRules[i];
+      // Kiểm tra xem quy tắc có phải là một media query không
+      if (rule.media) {
+          // Duyệt qua các quy tắc bên trong media query
+          for (let j = 0; j < rule.cssRules.length; j++) {
+              const innerRule = rule.cssRules[j];
+
+              // Kiểm tra xem quy tắc có chứa id không
+              if (innerRule.selectorText === id) {
+                  // Thêm vào Map với key là media query và value là cssText
+                  mediaQueriesMap.set(rule.media.mediaText, innerRule.cssText);
+                  break; // Dừng vòng lặp sau khi tìm thấy
+              }
+          }
+      }
+  }
+
+  return mediaQueriesMap; // Trả về Map chứa các media query và cssText
+}
+
+function loadMediaList(id) {
+  let html = ``
+  const mediaQueriesContainingId = getMediaQueriesContainingId(`#${id}`);
+  if (mediaQueriesContainingId.size === 0) {
+    return `
+    <tr>
+      <td class="media-query">
+        <div style="display:inline;">@media <input class="media-condition-input" style="width:calc(100% - 100px)"></input> { </div>
+        <textarea rows="4" class="media-css-input full-width"></textarea>
+        }
+      </td>
+    </tr>
+    `
+  }
+  for ([conditionText, cssText] of mediaQueriesContainingId) {
+    html += `
+    <tr>
+      <td class="media-query">
+        <div style="display:inline;">@media <input class="media-condition-input" style="width:calc(100% - 100px)" value="${conditionText}"></input> { </div>
+        <textarea rows="4" class="media-css-input full-width">${extractCssContent(cssText)}</textarea>
+        }
+      </td>
+    </tr>
+    `
+  }
+  return html
 }

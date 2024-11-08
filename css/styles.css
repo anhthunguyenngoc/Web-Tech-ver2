@@ -1,3 +1,11 @@
+:root {
+  --active-btn: #08979c;  /*màu button khi đang trong trạng thái active*/
+  --hover-btn: #45b0b4;  /*màu button khi đang trong trạng thái hover*/
+  --header: #006d75; /*màu header, navbar, màu nền footer nửa dưới, chữ dưới quảng cáo, màu border */
+  --sidebar-background: #def2f1; /*màu nền sidebar bên trái */
+  --footer-up: #50b9b4; /*màu nền footer nửa trên */
+  --table-background: #E0F2F1; /*màu nền bảng*/
+}
 
 html,
 body,
@@ -42,7 +50,7 @@ body {
   font-size: 20px;
   margin-bottom: 20px;
   font-weight: bold;
-  color: #006d75;
+  color: var(--header);
 }
 
 .details {
@@ -87,7 +95,7 @@ table td {
 }
 
 table th {
-  background-color: #E0F2F1;
+  background-color: var(--table-background);
   font-weight: bold;
 }
 
@@ -142,11 +150,11 @@ table th {
 
 .active {
   color: #fff !important;
-  background-color: #08979c !important;
+  background-color: var(--active-btn) !important;
 }
 
 .ERB {
-  color: #006d75;
+  color: var(--header);
 }
 
 .full-width {
@@ -196,15 +204,15 @@ table th {
 .section-header {
   margin-bottom: 10px;
 }
+
+#preview-content {
+  overflow-y: auto;
+}
+
 @media (max-width: 992px) {
   #myFooter {
       margin-left: 0!important;
       margin-right: 0!important;
-  }
-
-  .subsection-grid-container div {
-    grid-column: 1 / -1 !important;
-    margin: 0 !important;
   }
 
   .width-80 {
