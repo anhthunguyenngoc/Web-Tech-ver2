@@ -20,6 +20,7 @@
       rel="stylesheet"
       href="https://cdn.ckeditor.com/ckeditor5/43.3.0/ckeditor5.css"
     />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   </head>
 
   <body>
@@ -1132,6 +1133,59 @@
           </div>
         </div>
       </div>
+
+      <!-- Section 6: My wiki -->
+      <div id="menu6" class="w3-container w3-padding-64 hidden">
+        <div class="container">
+          <!--content-->
+          <div id="myWiki-detail1">
+            <div id="my-wiki-title" class="my-wiki-header">
+              <img
+                class="img-size"
+                src="assets/wikipedia-logo.png"
+                alt="wikipedia"
+              />
+              <h1>Wikipedia Search</h1>
+              <input
+                class="full-width"
+                type="text"
+                name="searchTerm"
+                id="searchTerm"
+                placeholder="Enter a search term..."
+                oninput="search(this.value)"
+              />
+            </div>
+            <div id="searchResult" class="sectionId flex-col"></div>
+          </div>
+
+          <div id="myWiki-detail2" class="hidden">
+            <div id="my-wiki-title" class="my-wiki-header">
+              <h1>Wikipedia Nearby Search</h1>
+              <button id="getLocation" onclick="getLocation()">
+                Find Nearby Wiki Pages
+              </button>
+            </div>
+            <div id="searchResult" class="sectionId flex-col"></div>
+          </div>
+
+          <div id="myWiki-detail3" class="hidden">
+            <div id="my-wiki-title" class="my-wiki-header">
+              <h1>Wikipedia Map Search</h1>
+              <div class="search-map-container">
+                <input
+                  type="text"
+                  id="locationInput"
+                  placeholder="Enter a location..."
+                />
+                <button id="searchButton" onclick="searchButtonClick()">
+                  Search
+                </button>
+              </div>
+            </div>
+            <div id="map"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <footer id="myFooter" style="margin-left: 250px">
@@ -1199,7 +1253,7 @@
     </footer>
 
     <!-- END MAIN -->
-
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <!-- Initialize Quill editor -->
     <script>
       let editor;

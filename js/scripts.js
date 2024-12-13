@@ -276,6 +276,21 @@ var studentInfo = [
   }
 ]
 
+var myWiki = [
+  {
+    "id": "myWiki-detail1",
+    "title": "Wikipedia Search",
+  }, 
+  {
+    "id": "myWiki-detail2",
+    "title": "Wikipedia Nearby Search",
+  },
+  {
+    "id": "myWiki-detail3",
+    "title": "Wikipedia Map Search",
+  }
+]
+
 var menu = [
   {
     id: "menu1",
@@ -301,6 +316,11 @@ var menu = [
     id: "menu5",
     title: "Admin page",
     details: [],
+  },
+  {
+    id: "menu6",
+    title: "My wiki",
+    details: myWiki,
   }
 ]
 
@@ -310,13 +330,14 @@ var mySidebar = document.getElementById("mySidebar");
 // Get the DIV with overlay effect
 var overlayBg = document.getElementById("myOverlay");
 
+var map;
+
 const buttons = document.querySelectorAll('.w3-bar-item');
 buttons.forEach(button => {
   button.addEventListener("click", () => {
     button.classList.add('active');
   });
 });
-
 
 // Tạo một thẻ <style> và thêm vào <head>
 let style = document.createElement('style');
@@ -429,7 +450,57 @@ function showContent(sectionId) {
     // Show selected section
     section.classList.remove('hidden')
 
-    if(sectionId !== "menu5"){
+    if(sectionId == "menu6") {
+      section.innerHTML = 
+        `<div class="container">
+          <!--content-->
+          <div id="myWiki-detail1">
+            <div id="my-wiki-title" class="my-wiki-header">
+              <img
+                class="img-size"
+                src="assets/wikipedia-logo.png"
+                alt="wikipedia"
+              />
+              <h1>Wikipedia Search</h1>
+              <input
+                class="full-width"
+                type="text"
+                name="searchTerm"
+                id="searchTerm"
+                placeholder="Enter a search term..."
+                oninput="search(this.value)"
+              />
+            </div>
+            <div id="searchResult" class="sectionId flex-col"></div>
+          </div>
+
+          <div id="myWiki-detail2" class="hidden">
+            <div id="my-wiki-title" class="my-wiki-header">
+              <h1>Wikipedia Nearby Search</h1>
+              <button id="getLocation" onclick="getLocation()">Find Nearby Wiki Pages</button>
+            </div>
+            <div id="searchNearbyResult" class="sectionId flex-col"></div>
+          </div>
+
+          <div id="myWiki-detail3" class="hidden">
+            <div id="my-wiki-title" class="my-wiki-header">
+              <h1>Wikipedia Map Search</h1>
+              <div class="search-map-container">
+                <input type="text" id="locationInput" placeholder="Enter a location..." />
+                <button id="searchButton" onclick="searchButtonClick()">Search</button>
+              </div>
+            </div>
+            <div id="map"></div>
+          </div>
+        </div>
+        `
+      map =  L.map('map').setView([20.5937, 78.9629], 5); // Đặt vị trí khởi đầu (India)
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+      }).addTo(map);
+    }
+    else if(sectionId !== "menu5"){
       section.innerHTML = converToSectionHTML(sectionId)
     }
     
@@ -442,7 +513,7 @@ function showContent(sectionId) {
     document.getElementById("content-container").innerHTML += newMenu.outerHTML
   }
   
-
+  loadMenu();
   loadSidebar(sectionId);
 
 }
@@ -608,6 +679,9 @@ function convertSectionId(sectionId){
     case 'menu4':
     case 'studentInfo':
       return 'menu4';
+    case 'menu6':
+    case 'myWiki':
+      return 'menu6';
     default:
       return sectionId;
   }
@@ -887,8 +961,16 @@ function sidebarHTML(arr){
   return html;
 }
 
-function loadSidebar(sectionId) {
+function wikiSidebarHTML(arr){
+  if(arr === null) return;
+  var html = ``;
+  for (item of arr){
+    html += `<a class="w3-bar-item w3-button w3-hover-cyan wiki-sidebar-btn" id="${item.id}-sidebar" href="#${item.id}">${item.title}</a>`;
+  }
+  return html;
+}
 
+function loadSidebar(sectionId) {
   const sidebar = document.getElementById("mySidebar");
   sidebar.innerHTML = '';
 
@@ -900,7 +982,28 @@ function loadSidebar(sectionId) {
   let item = menu.find(item => item.id === sectionId)
   let arr = getArr(sectionId)
 
-  sidebar.innerHTML = `<h4 class="w3-bar-item"><b>${item.title}</b></h4>` + sidebarHTML(arr);
+  if(sectionId == "menu6") {
+    sidebar.innerHTML = `<h4 class="w3-bar-item"><b>${item.title}</b></h4>` + wikiSidebarHTML(arr)
+  }
+  else {
+    sidebar.innerHTML = `<h4 class="w3-bar-item"><b>${item.title}</b></h4>` + sidebarHTML(arr)
+  };
+
+  document.querySelectorAll('.wiki-sidebar-btn').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault(); // Ngăn chặn hành động mặc định của thẻ a
+  
+        // Ẩn tất cả các phần nội dung
+        document.querySelectorAll('.container > div').forEach(detail => {
+            detail.classList.add('hidden');
+        });
+  
+        // Hiển thị phần nội dung tương ứng
+        const targetId = this.getAttribute('href');
+        document.querySelector(targetId).classList.remove('hidden');
+    });
+  });
+  
 }
 
 function editMenu(id){
@@ -1452,4 +1555,182 @@ function loadMediaList(id) {
     `
   }
   return html
+}
+
+const searchTermElem = document.querySelector('#searchTerm');
+searchTermElem.focus();
+
+const debounce = (fn, delay = 500) => {
+  let timeoutId;
+  return (...args) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+      timeoutId = setTimeout(() => {
+      fn.apply(null, args)
+    }, delay);
+  };
+};
+
+const search = debounce(async (searchTerm) => {
+  console.log("inputttt")
+  if (!searchTerm) {
+    // reset the search result
+    document.querySelector('#searchResult').innerHTML = '';
+    return;
+  }
+  try {
+    // make an API request
+    const url = `https://en.wikipedia.org/w/api.php?action=query&list=search&prop=info|extracts&inprop=url&utf8=&format=json&origin=*&srlimit=10&srsearch=${encodeURIComponent(searchTerm)}`;
+    const response = await fetch(url);
+    const searchResults = await response.json();
+    const searchResultHtml = generateSearchResultHTML(searchResults.query.search, searchTerm);
+    console.log(searchResults);
+    document.querySelector('#searchResult').innerHTML = searchResultHtml;
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+const stripHtml = (html) => {
+  let div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent;
+};
+
+const highlight = (str, keyword, className = "highlight") => {
+  const hl = `<span class="${className}">${keyword}</span>`;
+  return str.replace(new RegExp(keyword, 'gi'), hl);
+};
+
+const generateSearchResultHTML = (results, searchTerm) => {
+  return results
+  .map(result => {
+    const title = highlight(stripHtml(result.title), searchTerm);
+    const snippet = highlight(stripHtml(result.snippet), searchTerm);
+    return `<article>
+    <a href="https://en.wikipedia.org/?curid=${result.pageid}">
+    <h2>${title}</h2>
+    </a>
+    <div class="summary">${snippet}...</div>
+    </article>`;
+  })
+  .join('');
+}
+
+function getLocation() {
+  if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showPosition, showError);
+  } else {
+      alert("Geolocation is not supported by this browser.");
+  }
+}
+
+function showPosition(position) {
+  const latitude = position.coords.latitude;
+  const longitude = position.coords.longitude;
+  searchNearbyWikiPages(latitude, longitude);
+}
+
+function showError(error) {
+  switch(error.code) {
+      case error.PERMISSION_DENIED:
+          alert("User denied the request for Geolocation.");
+          break;
+      case error.POSITION_UNAVAILABLE:
+          alert("Location information is unavailable.");
+          break;
+      case error.TIMEOUT:
+          alert("The request to get user location timed out.");
+          break;
+      case error.UNKNOWN_ERROR:
+          alert("An unknown error occurred.");
+          break;
+  }
+}
+
+async function searchNearbyWikiPages(lat, lon) {
+  const gscoord = `${lat}|${lon}`;
+  const url = `https://en.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${gscoord}&gsradius=10000&gslimit=10&format=json&origin=*`;
+  
+  try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Network response was not ok');
+      
+      const data = await response.json();
+      if (!data.query || !data.query.geosearch) {
+          throw new Error('No geosearch results found');
+      }
+
+      // Lấy pageids cho yêu cầu sau
+      const pageIds = data.query.geosearch.map(result => result.pageid).join('|');
+      
+      // Yêu cầu hình ảnh cho các pageids
+      const imagesUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&pageids=${pageIds}&origin=*`;
+      const imagesResponse = await fetch(imagesUrl);
+      const imagesData = await imagesResponse.json();
+
+      // Gọi hàm để hiển thị kết quả với hình ảnh
+      displayResults(data.query.geosearch, imagesData.query.pages);
+  } catch (error) {
+      console.error('Error fetching data:', error);
+  }
+}
+
+function displayResults(results, pages) {
+  const searchResultElem = document.getElementById('searchNearbyResult');
+  searchResultElem.innerHTML = ''; // Reset kết quả trước khi hiển thị mới
+
+  if (results.length === 0) {
+      searchResultElem.innerHTML = '<p>No nearby wiki pages found.</p>';
+      return;
+  }
+
+  results.forEach(result => {
+    const article = document.createElement('article');
+    article.style.display = 'flex';
+    article.style.alignItems = 'center';
+    // Lấy thông tin hình ảnh từ pages
+    const pageInfo = pages[result.pageid];
+    const thumbnail = pageInfo && pageInfo.thumbnail ? pageInfo.thumbnail.source : 'assets/default-image-url.jpg';
+
+    article.innerHTML = `
+        <img src="${thumbnail}" alt="${result.title}" style="width: 100px; height: auto; float: left; margin-right: 10px;">
+        <div style="overflow: hidden;">
+            <a href="https://en.wikipedia.org/?curid=${result.pageid}" target="_blank">
+                <h2>${result.title}</h2>
+            </a>
+            <p>Distance: ${result.dist.toFixed(2)} meters</p>
+        </div>
+    `;
+    searchResultElem.appendChild(article);
+  });
+}
+
+function searchButtonClick() {
+    const location = document.getElementById('locationInput').value;
+    searchLocation(location);
+};
+
+async function searchLocation(location) {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.length === 0) {
+            alert('Location not found');
+            return;
+        }
+
+        const { lat, lon } = data[0];
+        map.setView([lat, lon], 13); // Cập nhật bản đồ về vị trí tìm được
+
+        L.marker([lat, lon]).addTo(map)
+            .bindPopup(`<b>${data[0].display_name}</b>`)
+            .openPopup();
+    } catch (error) {
+        console.error('Error fetching location:', error);
+    }
 }

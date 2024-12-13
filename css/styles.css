@@ -209,6 +209,86 @@ table th {
   overflow-y: auto;
 }
 
+.img-size {
+  height: 100px;
+  width: 100px;
+
+}
+
+#my-wiki-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#my-wiki-title h1 {
+  margin: 0;
+  font-weight: bold;
+  font-size: 36px;
+}
+
+#my-wiki-title input {
+  padding: 10px 20px;
+  border-radius: 25px;
+  border: 2px solid #08979c;
+  margin-top: 15px;
+}
+
+#my-wiki-title input:focus {
+  border: 3px solid #006d75;
+  outline: none;
+}
+
+#menu6 .container {
+  padding-bottom: 40px;
+}
+
+#my-wiki-title button {
+  outline: none;
+  border: none;
+  background-color: #006d75;
+  color: white;
+  padding: 10px 30px;
+  margin-top: 20px;
+  border-radius: 15px;
+  cursor: pointer;
+}
+
+.search-map-container {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.search-map-container input {
+  width: 100%;
+  border-radius: 10px !important;
+  margin-top: 0 !important;
+}
+
+.search-map-container button {
+  border-radius: 10px !important;
+  margin-top: 0 !important;
+  padding-left: 60px !important;
+  padding-right: 60px !important;
+}
+
+#my-wiki-title button:hover {
+  background-color: var(--hover-btn);
+}
+
+#map {
+  height: 500px;
+}
+
+#myWiki-detail2 {
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
+}
+
 @media (max-width: 992px) {
   #myFooter {
       margin-left: 0!important;
