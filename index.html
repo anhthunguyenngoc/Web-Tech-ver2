@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Xác thực Google và Chatbot</title>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -23,14 +22,12 @@
       .input-area {
         display: flex;
       }
-      .input-area input {
-        flex: 1;
+      .input-area input,
+      .input-area button {
         padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        margin-right: 5px;
       }
       .input-area button {
-        padding: 10px 15px;
         background: #007bff;
         color: white;
         border: none;
@@ -44,12 +41,7 @@
   </head>
   <body>
     <h1>Đăng Nhập bằng Google</h1>
-    <div
-      id="g_id_onload"
-      data-client_id="668194934165-s2v7o9u6da6jdjkmco45dsu2ha6425tu.apps.googleusercontent.com"
-      data-callback="handleCredentialResponse"
-    ></div>
-    <div class="g_id_signin" data-type="standard"></div>
+    <button onclick="oauthSignIn()">Đăng Nhập</button>
 
     <h2>Kiểm Tra Mail</h2>
     <button id="checkMailBtn">Kiểm Tra Mail</button>
@@ -71,26 +63,44 @@
     <script>
       let accessToken = "";
 
-      function handleCredentialResponse(response) {
-        const responsePayload = parseJwt(response.credential);
-        console.log("ID: " + responsePayload.sub);
-        console.log("Email: " + responsePayload.email);
-        accessToken = responsePayload.sub; // Lưu trữ access token
+      function oauthSignIn() {
+        const oauth2Endpoint = "https://accounts.google.com/o/oauth2/v2/auth";
+        const params = {
+          client_id:
+            "668194934165-s2v7o9u6da6jdjkmco45dsu2ha6425tu.apps.googleusercontent.com",
+          redirect_uri: "anhthunguyenngoc.github.io",
+          response_type: "token",
+          scope:
+            "https://www.googleapis.com/auth/drive.metadata.readonly https://www.googleapis.com/auth/calendar.readonly",
+          include_granted_scopes: "true",
+          state: "pass-through value",
+        };
+
+        const form = document.createElement("form");
+        form.setAttribute("method", "GET");
+        form.setAttribute("action", oauth2Endpoint);
+
+        for (const p in params) {
+          const input = document.createElement("input");
+          input.setAttribute("type", "hidden");
+          input.setAttribute("name", p);
+          input.setAttribute("value", params[p]);
+          form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
       }
 
-      function parseJwt(token) {
-        const base64Url = token.split(".")[1];
-        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-        const jsonPayload = decodeURIComponent(
-          atob(base64)
-            .split("")
-            .map(function (c) {
-              return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-            })
-            .join("")
-        );
-        return JSON.parse(jsonPayload);
-      }
+      // Xử lý phản hồi từ OAuth
+      window.addEventListener("load", function () {
+        const hash = window.location.hash;
+        if (hash) {
+          const params = new URLSearchParams(hash.substring(1));
+          accessToken = params.get("access_token");
+          console.log("Access Token: ", accessToken);
+        }
+      });
 
       document.getElementById("sendChatBtn").onclick = async function () {
         const userInput = document.getElementById("userInput").value;
